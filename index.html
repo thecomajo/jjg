@@ -26,6 +26,47 @@ main{max-width:920px;margin:-18px auto 36px;padding:0 10px;display:flex;flex-dir
 .subject.recommendedPick{box-shadow:0 0 0 3px rgba(14,116,144,.13);border-color:#06b6d4!important}.subject.corePick{box-shadow:0 0 0 3px rgba(220,38,38,.13);border-color:#ef4444!important}
 @media(max-width:760px){.recGrid{grid-template-columns:1fr}.recMatchItem{flex-direction:column}.recMatchItem button{width:100%}}
 @media print{#recommendSection{display:none!important}}
+
+.legendBar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:10.8px;font-weight:900;line-height:1;border:1px solid transparent;white-space:nowrap}
+.tagArea-korean{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.tagArea-math{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.tagArea-english{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.tagArea-social{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.tagArea-science{background:#ccfbf1;color:#115e59;border-color:#99f6e4}
+.tagArea-pe{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+.tagArea-art{background:#fae8ff;color:#86198f;border-color:#f5d0fe}
+.tagArea-tech{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+.tagArea-lang{background:#ffedd5;color:#9a3412;border-color:#fed7aa}
+.tagArea-liberal{background:#f1f5f9;color:#334155;border-color:#cbd5e1}
+.tagType-common{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
+.tagType-general{background:#ecfdf5;color:#047857;border-color:#bbf7d0}
+.tagType-career{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.tagType-convergence{background:#fdf2f8;color:#be185d;border-color:#fbcfe8}
+.groupRuleLine{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px}
+.rulePill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 9px;font-size:11.5px;font-weight:900;line-height:1.15;border:1px solid #dbe3ef;background:#fff;color:#334155;white-space:nowrap}
+.rulePill.main{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.rulePill.credit{background:#f8fafc;color:#475569;border-color:#cbd5e1}
+.rulePill.combo{background:#f8fafc;color:#0f172a;border-color:#cbd5e1}
+.rulePill.combo b{color:#2563eb}
+.rulePill.limit{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.rulePill.limit b{color:#dc2626}
+.ruleOr{font-size:11px;font-weight:900;color:#64748b}
+.inquiry{display:inline-flex;border-radius:999px;background:#e0f2fe;color:#075985;padding:2px 6px}
+.life{display:inline-flex;border-radius:999px;background:#fef3c7;color:#92400e;padding:2px 6px}
+#requiredCheck{font-size:15px;font-weight:900;line-height:1.6}
+#requiredTable td,#requiredTable th{font-size:13.5px}
+.reqGroupTag{font-size:12px}
+.reqStatus{display:inline-flex;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:900}
+.reqStatus.ok{background:#ecfdf5;color:#047857;border:1px solid #bbf7d0}
+.reqStatus.err{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+tr.reqRowErr{background:#fff7ed}
+tr.reqRowErr td{font-weight:900}
+.resultSubjectList{display:flex;flex-wrap:wrap;gap:6px}
+.resultSubject{display:inline-flex;align-items:center;border-radius:999px;background:#fff;border:1px solid #dbe3ef;padding:5px 9px;font-size:12px;font-weight:850;color:#172033}
+.resultSubject .credit{margin-left:5px;color:#1d4ed8;font-weight:950}
+.emptyResult{color:#667085;font-size:13px;padding:10px}
+
 </style>
 
 <style id="print-required-credit-fix">
@@ -221,7 +262,7 @@ main{max-width:920px;margin:-18px auto 36px;padding:0 10px;display:flex;flex-dir
     <div class="tableWrap" style="margin-top:10px">
       <table>
         <thead>
-          <tr><th>교과군</th><th>선택 포함 이수학점</th><th>최소 필요학점</th><th>결과</th></tr>
+          <tr><th>교과군</th><th>이수/기준</th><th>결과</th></tr>
         </thead>
         <tbody id="requiredTable"></tbody>
       </table>
@@ -233,7 +274,7 @@ main{max-width:920px;margin:-18px auto 36px;padding:0 10px;display:flex;flex-dir
     <div class="tableWrap">
       <table>
         <thead>
-          <tr><th>구분</th><th>교과군</th><th>과목</th><th>유형</th><th>학점</th><th>운영 학기</th></tr>
+          <tr><th>교과군</th><th>선택한 과목</th></tr>
         </thead>
         <tbody id="resultBody"></tbody>
       </table>
@@ -2780,10 +2821,48 @@ function groupRuleResult(group, picked){
   return rule ? rule.validate(picked) : {pass: true, message: ""};
 }
 
+function groupRuleHtml(group, need, credit){
+  if(group === "선택2" || group === "선택3"){
+    return `<div class="groupRuleLine"><span class="rulePill combo"><b>가능</b> <span class="inquiry">탐구 2</span> + <span class="life">생활교양 2</span></span><span class="ruleOr">또는</span><span class="rulePill combo"><b>가능</b> <span class="inquiry">탐구 3</span> + <span class="life">생활교양 1</span></span></div>`;
+  }
+  if(group === "선택4"){
+    return `<div class="groupRuleLine"><span class="rulePill limit"><b>제한</b> 국어·수학·영어 최대 1과목</span></div>`;
+  }
+  return "";
+}
+
 let selected = new Set();
 
 function esc(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
-function semText(s){return s.semesterNote || SEM_KEYS.filter(k=>s.semesters[k]>0).map(k=>SEM_NAMES[k]+' '+s.semesters[k]+'학점').join(', ') || '-';}
+function semText(s){return s.semesterNote || SEM_KEYS.filter(k=>s.semesters[k]>0).map(k=>SEM_NAMES[k]+' '+s.semesters[k]+'학점').join(', ') || '';}
+
+function areaClass(group){
+  const map={
+    "국어":"tagArea-korean",
+    "수학":"tagArea-math",
+    "영어":"tagArea-english",
+    "사회":"tagArea-social",
+    "과학":"tagArea-science",
+    "체육":"tagArea-pe",
+    "예술":"tagArea-art",
+    "기술가정/정보":"tagArea-tech",
+    "기술가정/정보/제2외국어/한문/교양":"tagArea-tech",
+    "제2외국어/한문":"tagArea-lang",
+    "교양":"tagArea-liberal"
+  };
+  return map[group] || "tagArea-liberal";
+}
+function typeClass(type){
+  if(String(type).includes("공통")) return "tagType-common";
+  if(String(type).includes("일반")) return "tagType-general";
+  if(String(type).includes("진로")) return "tagType-career";
+  if(String(type).includes("융합")) return "tagType-convergence";
+  return "tagType-common";
+}
+function subjectTags(s){
+  return `<span class="tag ${areaClass(s.group)}">${esc(s.group)}</span><span class="tag ${typeClass(s.type)}">${esc(s.type)}</span>`;
+}
+
 function normText(s){return String(s||'').toLowerCase().replace(/[\n\r\t]/g,' ').replace(/[·ㆍ??]/g,'').replace(/\s+/g,' ').trim();}
 function normCompact(s){return normText(s).replace(/[\s\-_/()\[\]{}.,:;]+/g,'');}
 function shortText(s,n){s=String(s||'-').replace(/\s+/g,' ').trim(); return s.length>n?s.slice(0,n)+'…':s;}
@@ -2965,7 +3044,7 @@ function init(){
 
 function renderFixed(){
   const box=document.getElementById('fixedList');
-  box.innerHTML=SUBJECTS.filter(s=>s.selectGroup==='지정').map(s=>`<div class="fixedItem"><b>${esc(s.name)}</b> <span class="small">${s.credit}학점</span><br><span class="small">${esc(s.group)} · ${esc(s.type)} · ${esc(semText(s))}</span>${s.special&&s.special!=='-'?`<br><span class="small">${esc(s.special)}</span>`:''}</div>`).join('');
+  box.innerHTML=SUBJECTS.filter(s=>s.selectGroup==='지정').map(s=>`<div class="fixedItem"><b>${esc(s.name)}</b> <span class="small">${s.credit}학점</span><div class="legendBar">${subjectTags(s)}</div><span class="small">${esc(semText(s))}</span>${s.special&&s.special!=='-'?`<br><span class="small">${esc(s.special)}</span>`:''}</div>`).join('');
 }
 
 function groupSort(a,b){
@@ -2983,8 +3062,7 @@ function renderChoices(){
     const need=arr[0].chooseCount;
     const credit=arr[0].credit;
     const firstSem=SEM_KEYS.find(k=>arr.some(s=>s.semesters[k]>0));
-    const ruleNote=GROUP_RULES[g]?.note ? ` · ${GROUP_RULES[g].note}` : '';
-    return `<div class="group" data-group="${g}"><div class="groupHead"><div><div class="groupTitle"><span class="groupName">${g}</span><span class="semester">${SEM_NAMES[firstSem]||''}</span></div><div class="muted">${need}과목 선택 · 과목당 ${credit}학점${ruleNote}</div></div><span id="badge-${g}" class="badge">0/${need}</span></div><div class="subjects">${arr.map(s=>`<label class="subject" id="card-${s.id}"><input type="checkbox" value="${s.id}" onchange="toggleSubject('${s.id}')"><div class="subjectBody"><div class="subjectTopLine"><span class="subName">${esc(s.name)}</span><span class="creditBadge">${s.credit}학점</span></div><div class="subMeta">${esc(s.group)} · ${esc(s.type)} · ${esc(semText(s))}</div><div class="chips"><span class="chip">${esc(s.selectGroup)}</span></div></div></label>`).join('')}</div></div>`;
+    return `<div class="group" data-group="${g}"><div class="groupHead"><div><div class="groupTitle"><span class="groupName">${g}</span><span class="semester">${SEM_NAMES[firstSem]||''}</span></div>${groupRuleHtml(g,need,credit)}</div><span id="badge-${g}" class="badge">0/${need}</span></div><div class="subjects">${arr.map(s=>`<label class="subject" id="card-${s.id}"><input type="checkbox" value="${s.id}" onchange="toggleSubject('${s.id}')"><div class="subjectBody"><div class="subjectTopLine"><span class="subName">${esc(s.name)}</span><span class="creditBadge">${s.credit}학점</span></div>${semText(s)?`<div class="subMeta">${esc(semText(s))}</div>`:''}<div class="chips">${subjectTags(s)}</div></div></label>`).join('')}</div></div>`;
   }).join('');
 }
 
@@ -3035,17 +3113,17 @@ function renderRequired(all){
       ok = false;
       lacks.push(`${name} ${need - got}학점 부족`);
     }
-    return `<tr><td>${esc(name)}</td><td>${got}</td><td>${need}</td><td>${pass ? '충족' : '부족'}</td></tr>`;
+    return `<tr class="${pass ? '' : 'reqRowErr'}"><td><span class="tag ${areaClass(name)} reqGroupTag">${esc(name)}</span></td><td><b>${got}</b> / ${need}학점</td><td><span class="reqStatus ${pass ? 'ok' : 'err'}">${pass ? '충족' : `부족 ${need-got}학점`}</span></td></tr>`;
   }).join('');
 
   document.getElementById('requiredTable').innerHTML = rows;
   const box = document.getElementById('requiredCheck');
   if(ok){
     box.className = 'warnBox ok';
-    box.textContent = '과목군별 필수 이수학점을 모두 충족했습니다.';
+    box.textContent = '필수 이수학점 기준을 모두 충족했습니다.';
   } else {
     box.className = 'warnBox err';
-    box.textContent = '필수 이수학점 기준 미충족: ' + lacks.join(' / ');
+    box.textContent = '부족한 교과군: ' + lacks.join(' / ');
   }
   return ok;
 }
@@ -3133,7 +3211,15 @@ function setMeter(id,pct,bad){
 }
 
 function renderResult(all){
-  document.getElementById('resultBody').innerHTML=all.map(s=>`<tr><td>${s.selectGroup==='지정'?'지정':'선택'}</td><td>${esc(s.group)}</td><td>${esc(s.name)}</td><td>${esc(s.type)}</td><td>${s.credit}</td><td>${esc(semText(s))}</td></tr>`).join('');
+  const choices = all.filter(s => s.selectGroup !== '지정');
+  const order = ['국어','수학','영어','사회','과학','체육','예술','기술가정/정보','제2외국어/한문','교양'];
+  const grouped = {};
+  choices.forEach(s => (grouped[s.group] ??= []).push(s));
+  const rows = order.filter(g => grouped[g]?.length).map(g => {
+    const subjects = grouped[g].map(s => `<span class="resultSubject">${esc(s.name)}<span class="credit">${s.credit}학점</span></span>`).join('');
+    return `<tr><td><span class="tag ${areaClass(g)} reqGroupTag">${esc(g)}</span></td><td><div class="resultSubjectList">${subjects}</div></td></tr>`;
+  }).join('');
+  document.getElementById('resultBody').innerHTML = rows || `<tr><td colspan="2"><div class="emptyResult">아직 선택한 과목이 없습니다.</div></td></tr>`;
 }
 
 function clearChoices(doUpdate=true){
@@ -3183,7 +3269,11 @@ function buildPrint(){
     return `<tr><td>${g}</td><td>${arr[0].chooseCount}과목${ruleNote ? '<br>'+esc(ruleNote) : ''}</td><td>${picked.map(s=>esc(s.name)).join(', ')||'-'}</td></tr>`;
   }).join('');
 
-  const resultRows=all.map(s=>`<tr><td>${s.selectGroup==='지정'?'지정':'선택'}</td><td>${esc(s.group)}</td><td>${esc(s.name)}</td><td>${s.credit}</td><td>${esc(semText(s))}</td></tr>`).join('');
+  const printChoices=all.filter(s=>s.selectGroup!=='지정');
+  const printOrder=['국어','수학','영어','사회','과학','체육','예술','기술가정/정보','제2외국어/한문','교양'];
+  const printGrouped={};
+  printChoices.forEach(s=>(printGrouped[s.group]??=[]).push(s));
+  const resultRows=printOrder.filter(g=>printGrouped[g]?.length).map(g=>`<tr><td>${esc(g)}</td><td>${printGrouped[g].map(s=>`${esc(s.name)}(${s.credit}학점)`).join(', ')}</td></tr>`).join('') || '<tr><td colspan="2">선택한 과목 없음</td></tr>';
   const reqRows=document.getElementById('requiredTable').innerHTML;
 
   document.getElementById('printSummary').innerHTML=`
@@ -3194,7 +3284,7 @@ function buildPrint(){
       <div class="printBox"><b>필수 이수학점 점검</b><table><thead><tr><th>교과군</th><th>이수</th><th>최소</th><th>결과</th></tr></thead><tbody>${reqRows}</tbody></table></div>
     </div>
     <div class="printBox"><b>선택그룹별 선택 내역</b><table><thead><tr><th>그룹</th><th>기준</th><th>선택 과목</th></tr></thead><tbody>${groupRows}</tbody></table></div>
-    <div class="printBox"><b>전체 이수 과목</b><table><thead><tr><th>구분</th><th>교과군</th><th>과목</th><th>학점</th><th>운영 학기</th></tr></thead><tbody>${resultRows}</tbody></table></div>
+    <div class="printBox"><b>교과군별 선택 과목</b><table><thead><tr><th>교과군</th><th>선택한 과목</th></tr></thead><tbody>${resultRows}</tbody></table></div>
     <div style="margin-top:18px;text-align:right;">확인자: ____________________</div>
   `;
 }
